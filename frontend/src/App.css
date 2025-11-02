@@ -1,0 +1,77 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.App-header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.App-header p {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.error-banner {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 15px;
+  text-align: center;
+  border-bottom: 2px solid #f5c6cb;
+}
+
+.App-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.App-sidebar {
+  width: 400px;
+  background-color: #f8f9fa;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.App-map {
+  flex: 1;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .App-container {
+    flex-direction: column;
+  }
+
+  .App-sidebar {
+    width: 100%;
+    height: 300px;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .App-map {
+    flex: 1;
+  }
+}
