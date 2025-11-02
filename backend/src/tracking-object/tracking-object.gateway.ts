@@ -54,17 +54,4 @@ export class TrackingObjectGateway implements OnGatewayConnection, OnGatewayDisc
     this.server.emit('objectDeleted', id);
     return { success: true };
   }
-
-  // Emit events to all clients
-  emitObjectCreated(object: any) {
-    this.server.emit('objectCreated', object);
-  }
-
-  emitObjectUpdated(object: any) {
-    this.server.emit('objectUpdated', object);
-  }
-
-  emitObjectDeleted(id: string) {
-    this.server.emit('objectDeleted', id);
-  }
 }

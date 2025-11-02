@@ -5,6 +5,8 @@ import { TrackingObject } from '../types/TrackingObject';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default marker icons in Leaflet with React
+// This is the recommended workaround from Leaflet documentation to fix marker icon paths
+// when using webpack/create-react-app which breaks the default icon resolution
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
