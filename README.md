@@ -2,6 +2,8 @@
 
 A full-stack web application for tracking objects on an interactive map with real-time updates. The application consists of a React frontend and a NestJS backend API.
 
+![alt text](image.png)
+
 ## Quick Start
 
 ### Prerequisites
