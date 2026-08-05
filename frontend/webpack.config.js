@@ -9,7 +9,7 @@ const { config } = require('dotenv');
 
 const dotEnvFile = '.env';
 config({ path: dotEnvFile });
-console.log(process.env);
+
 const port = process.env.PORT || 3000;
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -33,7 +33,7 @@ module.exports = {
         path: path.join(__dirname, 'build'),
     },
     plugins: [
-        new ReactRefreshWebpackPlugin({ overlay: false }),
+        ...(!isProd ? [new ReactRefreshWebpackPlugin({ overlay: false })] : []),
         new Dotenv({ path: dotEnvFile, silent: true }),
         new HtmlWebpackPlugin({
             template: './public/index.html',
@@ -66,7 +66,17 @@ module.exports = {
                     },
                 },
             },
-            { test: /\.css$/i, use: ['style-loader', 'css-loader'] },
+            {
+                test: /\.css$/i,
+                use: ['style-loader', { loader: 'css-loader', options: { esModule: false } }],
+            },
+            {
+                test: /\.(png|jpe?g|gif|webp|ico)$/i,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'assets/[name].[contenthash:8][ext]',
+                },
+            },
             { test: /\.svg/, use: [{ loader: '@svgr/webpack' }] },
             { test: /\.mjs$/, include: /node_modules/, type: 'javascript/auto' },
         ],
@@ -77,7 +87,6 @@ module.exports = {
     },
     experiments: {
         topLevelAwait: true,
-        outputModule: true,
     },
     optimization: {
         minimize: isProd,
