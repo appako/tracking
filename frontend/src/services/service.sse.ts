@@ -41,7 +41,6 @@ export class SseService {
             return;
         }
 
-        // A fresh controller per connection: an aborted signal cannot be reused after disconnect
         const controller = new AbortController();
         this.controller = controller;
         this.objectsSvc.startCleanup();
@@ -63,12 +62,10 @@ export class SseService {
                 }
                 if (!response.ok) throw new Error(`SSE connection failed: ${response.status} ${response.statusText}`);
 
-                // Pick up objects added while the stream was disconnected
                 this.objectsSvc.load().catch(error => console.error('Failed to load objects:', error));
             },
 
             onclose: () => {
-                // Throwing makes fetchEventSource reconnect after the server closes the stream
                 throw new Error('SSE connection closed by server');
             },
 

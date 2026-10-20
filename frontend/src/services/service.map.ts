@@ -11,19 +11,8 @@ export class MapService {
         makeObservable(this);
     }
 
-    @action.bound setZoom(zoom: number) {
-        this.zoom = zoom;
-    }
-
     @action.bound setView(center: Pick<ObjectDto, 'latitude' | 'longitude'>, zoom: number) {
         this.center = { lat: center.latitude, lng: center.longitude };
         this.zoom = zoom;
-    }
-
-    @action.bound flyTo(center: Pick<ObjectDto, 'latitude' | 'longitude'>, zoom?: number) {
-        this.center = { lat: center.latitude, lng: center.longitude };
-        if (zoom !== undefined) {
-            this.zoom = zoom;
-        }
     }
 }

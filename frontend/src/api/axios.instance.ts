@@ -7,17 +7,8 @@ export const API_AXIOS = axios.create({
     },
 });
 
-export const axiosInstance = <T>(options: AxiosRequestConfig): Promise<T> => {
-    const source = axios.CancelToken.source();
-    const promise = API_AXIOS({ ...options, cancelToken: source.token }).then(({ data }) => data);
-
-    // @ts-ignore
-    promise.cancel = () => {
-        source.cancel('Query was cancelled');
-    };
-
-    return promise;
-};
+export const axiosInstance = <T>(options: AxiosRequestConfig): Promise<T> =>
+    API_AXIOS<T>(options).then(({ data }) => data);
 
 export function getAxiosErrorMessage<T extends { statusCode: number; message: string }>(error: unknown) {
     if (isAxiosError<T>(error)) {

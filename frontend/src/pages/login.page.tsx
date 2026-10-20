@@ -35,7 +35,7 @@ export const LoginPage = observer(() => {
                 minHeight: '60vh',
             }}
         >
-            <Card sx={{ minWidth: 400, maxWidth: 500 }}>
+            <Card sx={{ width: '100%', maxWidth: 500 }}>
                 <CardContent sx={{ p: 4, gap: 2, display: 'flex', flexDirection: 'column' }}>
                     <Typography variant="h4" component="h1" gutterBottom>
                         Login

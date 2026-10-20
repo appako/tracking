@@ -1,6 +1,6 @@
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
-import { ClassConstructor, ClassTransformOptions, plainToInstance } from 'class-transformer';
-import { useEffect, useMemo } from 'react';
+import { ClassConstructor } from 'class-transformer';
+import { useEffect } from 'react';
 import { DeepPartial, DefaultValues, FieldValues, Resolver, UseFormProps, useForm } from 'react-hook-form';
 
 export function useModelForm<TModel extends ClassConstructor<T>, T extends FieldValues, TContext>(
@@ -9,11 +9,7 @@ export function useModelForm<TModel extends ClassConstructor<T>, T extends Field
     props?: UseFormProps<InstanceType<TModel>, TContext>,
 ) {
     const resolver = classValidatorResolver(Model) as unknown as Resolver<InstanceType<TModel>>;
-
-    const defaultValues = useMemo(
-        () => (initValues ? plainToModel(Model, initValues) : undefined),
-        [Model, initValues],
-    ) as DefaultValues<InstanceType<TModel>>;
+    const defaultValues = initValues as DefaultValues<InstanceType<TModel>> | undefined;
 
     const form = useForm<InstanceType<TModel>, TContext>({
         mode: 'onSubmit',
@@ -27,25 +23,4 @@ export function useModelForm<TModel extends ClassConstructor<T>, T extends Field
     useEffect(() => form.reset(defaultValues), [defaultValues, form]);
 
     return form;
-}
-
-export function plainToModel<TClass extends ClassConstructor<object>, V>(
-    cls: TClass,
-    plain: V[],
-    options?: ClassTransformOptions,
-): InstanceType<TClass>[];
-export function plainToModel<TClass extends ClassConstructor<object>, V>(
-    cls: TClass,
-    plain: V,
-    options?: ClassTransformOptions,
-): InstanceType<TClass>;
-export function plainToModel(cls: ClassConstructor<unknown>, plain: unknown, options?: ClassTransformOptions) {
-    return plainToInstance(cls, plain, {
-        exposeDefaultValues: true,
-        enableCircularCheck: true,
-        excludeExtraneousValues: true,
-        enableImplicitConversion: true,
-        exposeUnsetFields: false,
-        ...options,
-    });
 }

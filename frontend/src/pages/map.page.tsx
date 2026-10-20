@@ -12,7 +12,15 @@ export const MapPage = observer(() => {
 
     return (
         <Box sx={{ height: 'calc(100vh - 120px)', p: 2 }}>
-            <Box sx={{ display: 'flex', gap: 2, height: '100%', width: 'full' }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    gap: 2,
+                    height: '100%',
+                    width: '100%',
+                }}
+            >
                 <Box sx={{ flex: 3, height: '100%' }}>
                     <MapView />
                 </Box>

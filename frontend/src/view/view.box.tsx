@@ -6,9 +6,9 @@ export interface BoxProps extends MuiBoxProps {
     overflowX?: CSSProperties['overflowX'];
 }
 
-export function Flex(props: BoxProps) {
-    const sx = useMemo(() => ({ ...props.sx, overflowX: props.overflowX }), [props.sx, props.overflowX]);
-    return <MuiBox display="flex" flexDirection="column" justifyContent="center" {...props} sx={sx}></MuiBox>;
+export function Flex({ overflowX, sx, ...props }: BoxProps) {
+    const mergedSx = useMemo(() => [{ overflowX }, ...(Array.isArray(sx) ? sx : [sx])], [sx, overflowX]);
+    return <MuiBox display="flex" flexDirection="column" justifyContent="center" {...props} sx={mergedSx}></MuiBox>;
 }
 
 export function Col(props: BoxProps) {

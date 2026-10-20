@@ -41,7 +41,6 @@ export class AuthService {
                     if (data.valid) this.setAuthenticated(data.apiKey);
                     else this.logout();
                 })
-                // Keep the stored key on network errors so the session survives a backend restart
                 .catch(() => this.setStatus('anonymous'));
         }, [verify]);
     };
