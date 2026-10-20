@@ -5,6 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { FC, useEffect } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
+import 'react-leaflet-cluster/dist/assets/MarkerCluster.css';
 import { useService } from '~/services/service.base';
 import { MapService } from '~/services/service.map';
 import { ObjectsService } from '~/services/service.objects';

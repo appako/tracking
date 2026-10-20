@@ -1,9 +1,15 @@
 import { AppBar, Box, Button, CircularProgress, Container, Toolbar, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { FC, useState } from 'react';
+import { FC, Suspense, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { AuthService } from '~/services/service.auth';
 import { useService } from '~/services/service.base';
+
+const pageLoader = (
+    <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <CircularProgress />
+    </Box>
+);
 
 export const AppLayout: FC = observer(() => {
     const [year] = useState(new Date().getFullYear());
@@ -29,11 +35,11 @@ export const AppLayout: FC = observer(() => {
             <Box component="main" sx={{ flexGrow: 1 }}>
                 <Container maxWidth="xl">
                     {auth.status === 'verifying' ? (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                            <CircularProgress />
-                        </Box>
+                        pageLoader
                     ) : (
-                        <Outlet />
+                        <Suspense fallback={pageLoader}>
+                            <Outlet />
+                        </Suspense>
                     )}
                 </Container>
             </Box>

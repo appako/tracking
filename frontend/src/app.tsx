@@ -1,9 +1,11 @@
+import { lazy } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ROUTES } from '~/routes';
 import { LoginPage } from './pages/login.page';
-import { MapPage } from './pages/map.page';
 import { AuthWrapper } from './view/auth/auth.wrapper';
 import { AppLayout } from './view/layout/app.layout';
+
+const MapPage = lazy(() => import('./pages/map.page').then(module => ({ default: module.MapPage })));
 
 export const App = () => {
     return (

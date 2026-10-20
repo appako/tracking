@@ -103,11 +103,37 @@ module.exports = (_env, argv) => {
                 }),
             ],
             splitChunks: {
+                chunks: 'all',
                 cacheGroups: {
+                    reactServer: {
+                        test: /[\\/]node_modules[\\/]react-dom[\\/](server|cjs[\\/]react-dom-server)/,
+                        name: 'vendors-react-server',
+                        priority: 40,
+                    },
+                    react: {
+                        test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-router|react-router-dom)[\\/]/,
+                        name: 'vendors-react',
+                        priority: 30,
+                    },
+                    mui: {
+                        test: /[\\/]node_modules[\\/](@mui|@emotion|@popperjs|react-transition-group|stylis)[\\/]/,
+                        name: 'vendors-mui',
+                        priority: 30,
+                    },
+                    leaflet: {
+                        test: /[\\/]node_modules[\\/](leaflet|leaflet\.markercluster|react-leaflet|@react-leaflet|react-leaflet-cluster)[\\/]/,
+                        name: 'vendors-leaflet',
+                        priority: 30,
+                    },
+                    validation: {
+                        test: /[\\/]node_modules[\\/](class-validator|class-transformer|validator|libphonenumber-js)[\\/]/,
+                        name: 'vendors-validation',
+                        priority: 30,
+                    },
                     vendor: {
                         test: /[\\/]node_modules[\\/]/,
                         name: 'vendors',
-                        chunks: 'all',
+                        priority: 10,
                     },
                 },
             },
