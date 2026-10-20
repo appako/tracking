@@ -2,7 +2,6 @@ import axios, { isAxiosError, type AxiosRequestConfig } from 'axios';
 
 export const API_AXIOS = axios.create({
     baseURL: process.env.API_HOST,
-    withCredentials: true,
     headers: {
         common: new axios.AxiosHeaders({ 'Cache-Control': 'no-cache', Pragma: 'no-cache', Expires: '0' }),
     },

@@ -1,4 +1,4 @@
-import { Axios } from 'axios';
+import { AxiosInstance } from 'axios';
 import { createContext, FC, PropsWithChildren, useContext, useState } from 'react';
 import { C } from 'ts-toolbelt';
 import { container, DependencyContainer } from 'tsyringe';
@@ -31,7 +31,7 @@ export function useInjectable<T extends object>(cls: C.Class<[...any], T>): T {
     return model;
 }
 
-export function HttpServiceBase<T extends object>(apiDecl: T): C.Class<[], T & { readonly axios: Axios }> {
+export function HttpServiceBase<T extends object>(apiDecl: T): C.Class<[], T & { readonly axios: AxiosInstance }> {
     const base = class {
         constructor() {
             Object.assign(this, apiDecl);

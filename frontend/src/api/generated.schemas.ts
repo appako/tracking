@@ -33,6 +33,24 @@ export interface ObjectDto {
     updatedAt: string;
 }
 
+export type EventMessageKeyEnum = (typeof EventMessageKeyEnum)[keyof typeof EventMessageKeyEnum];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const EventMessageKeyEnum = {
+    UPDATE_OBJECTS: 'UPDATE_OBJECTS',
+    ADD_OBJECT: 'ADD_OBJECT',
+} as const;
+
+export interface EventUpdateObjectsDto {
+    value: ObjectDto[];
+    type: EventMessageKeyEnum;
+}
+
+export interface EventCreateObjectDto {
+    value: ObjectDto;
+    type: EventMessageKeyEnum;
+}
+
 export type EventMessageTypeEnum = (typeof EventMessageTypeEnum)[keyof typeof EventMessageTypeEnum];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -41,9 +59,17 @@ export const EventMessageTypeEnum = {
     heartbeat: 'heartbeat',
 } as const;
 
-export type EventMessageDtoData = EventUpdateObjectDto | EventCreateObjectDto;
+/**
+ * Event payload; null for heartbeat events
+ * @nullable
+ */
+export type EventMessageDtoData = EventUpdateObjectsDto | EventCreateObjectDto | null;
 
 export interface EventMessageDto {
+    /**
+     * Event payload; null for heartbeat events
+     * @nullable
+     */
     data: EventMessageDtoData;
     id: string;
     type: EventMessageTypeEnum;
