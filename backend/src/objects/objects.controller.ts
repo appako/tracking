@@ -1,11 +1,19 @@
 import { Controller, Get, HttpCode, HttpStatus, Sse } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import {
+    ApiExtraModels,
+    ApiOkResponse,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+    ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { Observable } from 'rxjs';
-import { EventMessageDto, ObjectDto } from './objects.dto';
+import { EventCreateObjectDto, EventMessageDto, EventUpdateObjectsDto, ObjectDto } from './objects.dto';
 import { ObjectsService } from './objects.service';
 import { ObjectsSseService } from './objects.sse.service';
 
 @ApiTags('Objects')
+@ApiExtraModels(EventUpdateObjectsDto, EventCreateObjectDto)
 @Controller('objects')
 export class ObjectsController {
     constructor(
@@ -23,11 +31,10 @@ export class ObjectsController {
     }
 
     @Sse('stream')
-    @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Connect to event stream' })
-    @ApiOkResponse({ description: 'Connected', type: EventMessageDto<ObjectDto> })
+    @ApiOkResponse({ description: 'Connected', type: EventMessageDto })
     @ApiUnauthorizedResponse()
-    stream(): Observable<EventMessageDto<ObjectDto>> {
+    stream(): Observable<EventMessageDto> {
         return this.objectsSseSvc.createStream();
     }
 }

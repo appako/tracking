@@ -7,13 +7,14 @@ const log = new Logger('MAIN');
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+    const isProd = process.env.NODE_ENV === 'production';
 
     app.setGlobalPrefix('api');
     app.useGlobalPipes(
         new ValidationPipe({
             transform: true,
             stopAtFirstError: true,
-            enableDebugMessages: true,
+            enableDebugMessages: !isProd,
             forbidNonWhitelisted: true,
             forbidUnknownValues: true,
             whitelist: true,
@@ -29,7 +30,7 @@ async function bootstrap() {
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, document);
 
-    app.enableCors({ origin: true, credentials: true });
+    app.enableCors({ origin: (process.env.CORS_ORIGIN ?? 'http://localhost:3000').split(',') });
 
     const port = process.env.PORT ?? 8000;
     const host = process.env.HOST ?? 'http://127.0.0.1';
