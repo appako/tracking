@@ -2,7 +2,9 @@ import { Box, Button, Card, CardContent, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
 import { FormProvider } from 'react-hook-form';
+import { Navigate } from 'react-router-dom';
 import { AuthLoginDto } from '~/dto/auth.dto';
+import { ROUTES } from '~/routes';
 import { AuthService } from '~/services/service.auth';
 import { useService } from '~/services/service.base';
 import { useModelForm } from '~/utils/form';
@@ -22,6 +24,8 @@ export const LoginPage = observer(() => {
         [form, onSubmit],
     );
 
+    if (auth.isAuthenticated) return <Navigate to={ROUTES.MAP.$path()} replace />;
+
     return (
         <Box
             sx={{
@@ -31,7 +35,7 @@ export const LoginPage = observer(() => {
                 minHeight: '60vh',
             }}
         >
-            <Card sx={{ minWidth: 400, maxWidth: 500 }}>
+            <Card sx={{ width: '100%', maxWidth: 500 }}>
                 <CardContent sx={{ p: 4, gap: 2, display: 'flex', flexDirection: 'column' }}>
                     <Typography variant="h4" component="h1" gutterBottom>
                         Login

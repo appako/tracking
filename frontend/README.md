@@ -17,8 +17,8 @@ A React-based frontend application for tracking objects on a map with real-time 
 
 Before running the application locally, ensure you have the following installed:
 
-- **Node.js** (version 16 or higher)
-- **yarn** package manager
+- **Node.js** 22 or higher
+- **Yarn** 4 (enable it with `corepack enable`)
 - **Backend API** running (see backend README for setup instructions)
 
 ## Getting Started
@@ -49,9 +49,11 @@ The application will start on `http://localhost:3000` (or the next available por
 
 ### Development
 
-- `yarn start` - Starts the development server with hot reload
+- `yarn start` - Starts the development server with Fast Refresh
+- `yarn build` - Builds the production bundle into `build/`
+- `yarn typecheck` - Type-checks the project (the build itself does not report type errors)
 - `yarn format` - Formats code using Prettier
-- `yarn orval` - Generate TypeScript API clients
+- `yarn orval` - Generates the TypeScript API client (requires the running backend)
 
 ## Key Features
 
@@ -77,7 +79,7 @@ The development server supports hot reload, so changes to your code will automat
 
 ### API Code Generation
 
-This project uses Orval to generate TypeScript API clients from the backend's OpenAPI specification. If the backend API changes, regenerate the client:
+This project uses Orval to generate TypeScript API clients from the backend's OpenAPI specification (`${API_HOST}/api-json`). If the backend API changes, start the backend and regenerate the client:
 
 ```bash
 yarn orval

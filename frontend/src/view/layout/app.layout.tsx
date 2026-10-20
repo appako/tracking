@@ -1,25 +1,21 @@
-import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material';
+import { AppBar, Box, Button, CircularProgress, Container, Toolbar, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { FC, useEffect, useState } from 'react';
+import { FC, Suspense, useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useNavCallback } from '~/hooks/use.nav';
-import { ROUTES } from '~/routes';
 import { AuthService } from '~/services/service.auth';
 import { useService } from '~/services/service.base';
+
+const pageLoader = (
+    <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <CircularProgress />
+    </Box>
+);
 
 export const AppLayout: FC = observer(() => {
     const [year] = useState(new Date().getFullYear());
     const [auth] = useService(AuthService);
 
     auth.useVerify();
-
-    const goToLogin = useNavCallback(nav => nav(ROUTES.LOGIN.$path()), []);
-    const goToMap = useNavCallback(nav => nav(ROUTES.MAP.$path()), []);
-
-    useEffect(() => {
-        if (auth.isAuthenticated) goToMap();
-        else goToLogin();
-    }, [auth.isAuthenticated, goToLogin, goToMap]);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -38,7 +34,13 @@ export const AppLayout: FC = observer(() => {
 
             <Box component="main" sx={{ flexGrow: 1 }}>
                 <Container maxWidth="xl">
-                    <Outlet />
+                    {auth.status === 'verifying' ? (
+                        pageLoader
+                    ) : (
+                        <Suspense fallback={pageLoader}>
+                            <Outlet />
+                        </Suspense>
+                    )}
                 </Container>
             </Box>
 

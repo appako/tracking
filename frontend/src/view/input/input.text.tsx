@@ -1,6 +1,6 @@
 import { TextField, TextFieldProps } from '@mui/material';
 import { ChangeEventHandler, useCallback } from 'react';
-import { Control, FieldPath, FieldValues, useController, useFormContext, useWatch } from 'react-hook-form';
+import { Control, FieldPath, FieldValues, useController, useFormContext } from 'react-hook-form';
 
 export function TextFieldRhf<
     TFieldValues extends FieldValues = FieldValues,
@@ -12,28 +12,29 @@ export function TextFieldRhf<
         control: Control<TFieldValues, TContext, TTransformedValues>;
     } & TextFieldProps,
 ) {
-    const { name, control, helperText } = props;
+    const { name, control, helperText, ...textFieldProps } = props;
     const {
         field,
         fieldState: { error },
     } = useController({ control, name });
     const { clearErrors } = useFormContext();
-    const value = useWatch({ control, name });
 
     const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
         e => {
-            const value = e.target.value;
             if (error) clearErrors(field.name);
-            field.onChange({ target: { name: field.name, value } });
+            field.onChange(e.target.value);
         },
         [clearErrors, error, field],
     );
 
     return (
         <TextField
-            {...props}
-            value={value || ''}
+            {...textFieldProps}
+            name={field.name}
+            inputRef={field.ref}
+            value={field.value ?? ''}
             onChange={handleChange}
+            onBlur={field.onBlur}
             error={Boolean(error)}
             helperText={error?.message || helperText}
         />

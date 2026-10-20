@@ -3,25 +3,45 @@ import { useCallback, useEffect } from 'react';
 import { singleton } from 'tsyringe';
 import { getAxiosErrorMessage } from '~/api';
 import { LoginDto } from '~/api/generated.schemas';
+import { queryClient } from '~/api/query.client';
 import { ApiService } from './service.api';
+import { ObjectsService } from './service.objects';
+
+export type AuthStatus = 'verifying' | 'authenticated' | 'anonymous';
 
 @singleton()
 export class AuthService {
-    @observable isAuthenticated = false;
+    private static readonly API_KEY_STORAGE_KEY = 'apiKey';
 
-    constructor(private apiSvc: ApiService) {
+    @observable apiKey: string | null = null;
+    @observable status: AuthStatus = 'verifying';
+
+    constructor(
+        private apiSvc: ApiService,
+        private objectsSvc: ObjectsService,
+    ) {
         makeObservable(this);
+    }
+
+    @computed get isAuthenticated() {
+        return this.status === 'authenticated';
     }
 
     useVerify = () => {
         const { mutateAsync: verify } = this.apiSvc.useAuthControllerVerify();
         useEffect(() => {
-            const apiKey = window.sessionStorage.getItem('apiKey');
-            if (!apiKey) return;
+            const apiKey = window.sessionStorage.getItem(AuthService.API_KEY_STORAGE_KEY);
+            if (!apiKey) {
+                this.setStatus('anonymous');
+                return;
+            }
 
-            verify({ data: { apiKey } }).then(data => {
-                if (data.valid) this.setAuthenticated(data.apiKey);
-            });
+            verify({ data: { apiKey } })
+                .then(data => {
+                    if (data.valid) this.setAuthenticated(data.apiKey);
+                    else this.logout();
+                })
+                .catch(() => this.setStatus('anonymous'));
         }, [verify]);
     };
 
@@ -44,19 +64,23 @@ export class AuthService {
         return { onSubmit };
     };
 
-    logout = () => {
-        this.setAuthenticated(undefined);
-    };
-
-    @action.bound setAuthenticated(value: string | undefined) {
-        this.isAuthenticated = !!value;
-        this.apiSvc.axios.defaults.headers.common.Authorization = value;
-        if (value) window.sessionStorage.setItem('apiKey', value);
-        else window.sessionStorage.removeItem('apiKey');
+    @action.bound logout() {
+        this.apiKey = null;
+        this.status = 'anonymous';
+        delete this.apiSvc.axios.defaults.headers.common.Authorization;
+        window.sessionStorage.removeItem(AuthService.API_KEY_STORAGE_KEY);
+        this.objectsSvc.clear();
+        queryClient.clear();
     }
 
-    @computed get apiKey() {
-        if (!this.isAuthenticated) return undefined;
-        return window.sessionStorage.getItem('apiKey');
+    @action.bound private setStatus(status: AuthStatus) {
+        this.status = status;
+    }
+
+    @action.bound private setAuthenticated(apiKey: string) {
+        this.apiKey = apiKey;
+        this.status = 'authenticated';
+        this.apiSvc.axios.defaults.headers.common.Authorization = apiKey;
+        window.sessionStorage.setItem(AuthService.API_KEY_STORAGE_KEY, apiKey);
     }
 }

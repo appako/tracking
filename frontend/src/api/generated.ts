@@ -25,10 +25,6 @@ import type { AuthResponseDto, EventMessageDto, LoginDto, ObjectDto, ValidateKey
 
 import { axiosInstance } from './axios.instance';
 
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 /**
  * @summary Authenticate with API key
  */

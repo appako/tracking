@@ -2,10 +2,10 @@ import { Paper, styled } from '@mui/material';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { observer } from 'mobx-react-lite';
-import { FC, useCallback, useEffect } from 'react';
+import { FC, useEffect } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
-import { ObjectDto } from '~/api/generated.schemas';
+import 'react-leaflet-cluster/dist/assets/MarkerCluster.css';
 import { useService } from '~/services/service.base';
 import { MapService } from '~/services/service.map';
 import { ObjectsService } from '~/services/service.objects';
@@ -75,13 +75,12 @@ const MapController = observer(() => {
 
 const MapCluster: FC = observer(() => {
     const [objects] = useService(ObjectsService);
-    const renderObject = useCallback((object: ObjectDto) => {
-        return <MapMarker key={object.id} object={object} onClick={obj => console.log('Click:', obj)} />;
-    }, []);
 
     return (
         <MarkerClusterGroup chunkedLoading iconCreateFunction={onIconCreate}>
-            {objects.items.map(renderObject)}
+            {objects.items.map(object => (
+                <MapMarker key={object.id} object={object} />
+            ))}
         </MarkerClusterGroup>
     );
 });
@@ -92,7 +91,10 @@ export const MapView = observer(() => {
         <StypedPaper>
             <MapContainer center={map.center} zoom={map.zoom} style={{ height: '100%', width: '100%' }}>
                 <MapController />
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <TileLayer
+                    url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
                 <MapCluster />
             </MapContainer>
         </StypedPaper>

@@ -1,62 +1,84 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { GeojsonService, PolygonData } from '../common/geojson.service';
 import { PubSubService } from '../common/pubsub.service';
-import { ObjectDto } from './objects.dto';
+import { EventMessageKeyEnum, ObjectDto } from './objects.dto';
 
 @Injectable()
-export class ObjectsService implements OnModuleInit {
+export class ObjectsService implements OnModuleInit, OnModuleDestroy {
+    private static readonly MOVE_INTERVAL_MS = 5 * 1000;
+    private static readonly MUTATE_INTERVAL_MS = 60 * 1000;
+    private static readonly SPEED_KMH = 200;
+    private static readonly METERS_PER_DEGREE = 111000;
+
     private readonly log = new Logger(this.constructor.name);
 
     private objects: Map<string, ObjectDto> = new Map();
     private polygonData!: PolygonData;
+    private timers: NodeJS.Timeout[] = [];
 
     constructor(
         private kmlSvc: GeojsonService,
         private pubSubService: PubSubService,
+        private configService: ConfigService,
     ) {}
 
     onModuleInit() {
-        this.polygonData = this.kmlSvc.parsePolygonFromFile('./map.kml');
+        const kmlPath = path.resolve(this.configService.get<string>('MAP_KML_PATH', 'map.kml'));
+        this.polygonData = this.kmlSvc.parsePolygonFromFile(kmlPath);
 
         const count = Math.floor(Math.random() * 101) + 100;
         while (this.objects.size < count) this.addNewObject();
 
-        setInterval(() => {
-            this.log.debug('Modifying objects collection');
-            if (Math.random() < 0.5) this.addNewObject();
-            else this.removeRandomObject();
-        }, 60 * 1000);
+        this.timers.push(
+            setInterval(() => {
+                this.log.debug('Modifying objects collection');
+                if (Math.random() < 0.5) this.addNewObject();
+                else this.removeRandomObject();
+            }, ObjectsService.MUTATE_INTERVAL_MS),
+        );
 
-        setInterval(() => {
-            this.log.debug('Updating object positions');
-            this.objects.forEach(obj => {
-                const speedKmh = 200;
-                const speedMs = speedKmh / 3.6;
-                const intervalSeconds = 5;
-                const distanceMeters = speedMs * intervalSeconds;
-                const speedDegrees = distanceMeters / 111000;
+        this.timers.push(setInterval(() => this.moveObjects(), ObjectsService.MOVE_INTERVAL_MS));
+    }
 
-                const directionRadians = (obj.direction * Math.PI) / 180;
+    onModuleDestroy() {
+        this.timers.forEach(timer => clearInterval(timer));
+        this.timers = [];
+    }
 
-                const deltaLat = speedDegrees * Math.cos(directionRadians);
-                const deltaLng = speedDegrees * Math.sin(directionRadians);
+    private moveObjects() {
+        const distanceDegrees =
+            ((ObjectsService.SPEED_KMH / 3.6) * (ObjectsService.MOVE_INTERVAL_MS / 1000)) /
+            ObjectsService.METERS_PER_DEGREE;
 
-                if (Math.random() < 0.3) {
-                    obj.direction += this.randomInRange(-2, 2);
-                } else if (Math.random() < 0.05) {
-                    obj.direction += this.randomInRange(-15, 15);
-                }
+        this.objects.forEach(obj => {
+            if (Math.random() < 0.3) {
+                obj.direction += this.randomInRange(-2, 2);
+            } else if (Math.random() < 0.05) {
+                obj.direction += this.randomInRange(-15, 15);
+            }
 
-                obj.direction = (obj.direction + 360) % 360;
-                obj.latitude += deltaLat;
-                obj.longitude += deltaLng;
+            const directionRadians = (obj.direction * Math.PI) / 180;
+            const latitude = obj.latitude + distanceDegrees * Math.cos(directionRadians);
+            const longitude =
+                obj.longitude +
+                (distanceDegrees * Math.sin(directionRadians)) / Math.cos((obj.latitude * Math.PI) / 180);
 
-                obj.updatedAt = new Date();
+            if (this.isPointInPolygon(latitude, longitude)) {
+                obj.latitude = latitude;
+                obj.longitude = longitude;
+            } else {
+                // Turn back at the polygon border instead of leaving the area
+                obj.direction += 180 + this.randomInRange(-30, 30);
+            }
 
-                this.pubSubService.publish('UPDATE_OBJECT', obj);
-            });
-        }, 5 * 1000);
+            obj.direction = ((obj.direction % 360) + 360) % 360;
+            obj.updatedAt = new Date();
+        });
+
+        this.pubSubService.publish(EventMessageKeyEnum.UPDATE_OBJECTS, this.getList());
     }
 
     private randomInRange(min: number, max: number): number {
@@ -114,19 +136,18 @@ export class ObjectsService implements OnModuleInit {
         };
         this.objects.set(id, newObj);
 
-        this.pubSubService.publish('ADD_OBJECT', newObj);
-
-        return [id, newObj] as const;
+        this.pubSubService.publish(EventMessageKeyEnum.ADD_OBJECT, { ...newObj });
     }
 
+    // Removal is intentionally not published: clients drop objects that stop receiving updates
     private removeRandomObject() {
         const ids = Array.from(this.objects.keys());
-        if (ids.length === 0) return false;
+        if (ids.length === 0) return;
         const randomId = ids[Math.floor(Math.random() * ids.length)];
         this.objects.delete(randomId);
     }
 
     getList(): ObjectDto[] {
-        return Array.from(this.objects.values());
+        return Array.from(this.objects.values(), obj => ({ ...obj }));
     }
 }

@@ -12,21 +12,11 @@ export interface PubSubEvent<T = unknown> {
 export class PubSubService<T = unknown> {
     private eventSubject = new Subject<PubSubEvent<T>>();
 
-    constructor() {}
-
     publish(channel: string, data: T): void {
         this.eventSubject.next({ channel, data, timestamp: new Date() });
     }
 
     subscribe(channel: string) {
         return this.eventSubject.pipe(filter(event => event.channel === channel));
-    }
-
-    subscribeAll() {
-        return this.eventSubject.asObservable();
-    }
-
-    getEventSubject() {
-        return this.eventSubject;
     }
 }

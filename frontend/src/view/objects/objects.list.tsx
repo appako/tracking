@@ -7,7 +7,6 @@ import { renderObjectListItem } from './objects.list.item';
 
 export const ObjectsList = observer(() => {
     const [svc] = useService(ObjectsService);
-    svc.useObjectsList();
 
     return (
         <Paper

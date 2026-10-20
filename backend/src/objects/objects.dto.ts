@@ -1,6 +1,6 @@
 import { MessageEvent } from '@nestjs/common';
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { IsEnum, IsNumber, IsObject, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsArray, IsEnum, IsNumber, IsObject, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class ObjectDto {
     @ApiProperty({ description: 'Unique identifier' })
@@ -32,18 +32,18 @@ export enum EventMessageTypeEnum {
 }
 
 export enum EventMessageKeyEnum {
-    UPDATE_OBJECT = 'UPDATE_OBJECT',
+    UPDATE_OBJECTS = 'UPDATE_OBJECTS',
     ADD_OBJECT = 'ADD_OBJECT',
 }
 
-export class EventUpdateObjectDto {
-    @IsObject()
-    @ApiProperty({ type: ObjectDto })
-    value!: ObjectDto;
+export class EventUpdateObjectsDto {
+    @IsArray()
+    @ApiProperty({ type: ObjectDto, isArray: true })
+    value!: ObjectDto[];
 
     @IsEnum(EventMessageKeyEnum)
     @ApiProperty({ enum: EventMessageKeyEnum, enumName: 'EventMessageKeyEnum' })
-    type: EventMessageKeyEnum.UPDATE_OBJECT = EventMessageKeyEnum.UPDATE_OBJECT;
+    type: EventMessageKeyEnum.UPDATE_OBJECTS = EventMessageKeyEnum.UPDATE_OBJECTS;
 }
 
 export class EventCreateObjectDto {
@@ -56,16 +56,17 @@ export class EventCreateObjectDto {
     type: EventMessageKeyEnum.ADD_OBJECT = EventMessageKeyEnum.ADD_OBJECT;
 }
 
-export class EventMessageDto<T> implements Omit<MessageEvent, 'data'> {
+export type EventMessageData = EventUpdateObjectsDto | EventCreateObjectDto;
+
+export class EventMessageDto implements Omit<MessageEvent, 'data'> {
     @IsObject()
+    @IsOptional()
     @ApiProperty({
-        type: () => Object,
-        oneOf: [{ $ref: getSchemaPath(EventUpdateObjectDto) }, { $ref: getSchemaPath(EventCreateObjectDto) }],
+        nullable: true,
+        description: 'Event payload; null for heartbeat events',
+        oneOf: [{ $ref: getSchemaPath(EventUpdateObjectsDto) }, { $ref: getSchemaPath(EventCreateObjectDto) }],
     })
-    data!: {
-        type: EventMessageKeyEnum;
-        value: T;
-    };
+    data!: EventMessageData | null;
 
     @IsString()
     @ApiProperty()
