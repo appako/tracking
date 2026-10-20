@@ -39,7 +39,7 @@ cp .env.example .env
 yarn start:dev
 ```
 
-The API will be available at `http://127.0.0.1:8000/api` with Swagger documentation at `http://127.0.0.1:8000/api`.
+The API will be available at `http://127.0.0.1:8000/api` with Swagger documentation at `http://127.0.0.1:8000/api` and the OpenAPI JSON at `http://127.0.0.1:8000/api-json`.
 
 ## Available Scripts
 
@@ -47,11 +47,14 @@ The API will be available at `http://127.0.0.1:8000/api` with Swagger documentat
 
 - `yarn start:dev` - Starts the development server with hot reload
 - `yarn start:debug` - Starts the server in debug mode
+- `yarn build` - Builds the project into `dist/`
+- `yarn start:prod` - Runs the built project
 
 ### Code Quality
 
 - `yarn lint` - Runs ESLint and fixes issues
 - `yarn format` - Formats code using Prettier
+- `yarn test` - Runs unit tests with Jest
 
 ## API Documentation
 
@@ -70,9 +73,11 @@ The documentation includes:
 
 ### Environment Variables
 
-- `HOST` - Server host (default: http://127.0.0.1)
+- `HOST` - Server host used in startup logs (default: http://127.0.0.1)
 - `PORT` - Server port (default: 8000)
 - `VALID_API_KEYS` - Comma-separated list of valid API keys
+- `CORS_ORIGIN` - Comma-separated list of origins allowed by CORS (default: http://localhost:3000)
+- `MAP_KML_PATH` - Path to the KML file with the polygon objects are generated in, relative to the working directory (default: map.kml)
 
 ## License
 
