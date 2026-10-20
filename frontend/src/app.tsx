@@ -1,6 +1,5 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ROUTES } from '~/routes';
-import { HomePage } from './pages/home.page';
 import { LoginPage } from './pages/login.page';
 import { MapPage } from './pages/map.page';
 import { AuthWrapper } from './view/auth/auth.wrapper';
@@ -11,11 +10,12 @@ export const App = () => {
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<AppLayout />}>
-                    <Route path={ROUTES.ROOT.$path()} element={<HomePage />} />
+                    <Route path={ROUTES.ROOT.$path()} element={<Navigate to={ROUTES.MAP.$path()} replace />} />
                     <Route path={ROUTES.LOGIN.$path()} element={<LoginPage />} />
                     <Route element={<AuthWrapper />}>
                         <Route path={ROUTES.MAP.$path()} element={<MapPage />} />
                     </Route>
+                    <Route path="*" element={<Navigate to={ROUTES.ROOT.$path()} replace />} />
                 </Route>
             </Routes>
         </BrowserRouter>
