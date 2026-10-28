@@ -21,7 +21,6 @@ export const ObjectListItem: FC<ObjectListItemProps> = observer(({ object }) => 
     return (
         <Card
             sx={{
-                mb: 1,
                 cursor: 'pointer',
                 '&:hover': { backgroundColor: 'action.hover' },
             }}
@@ -51,5 +50,3 @@ export const ObjectListItem: FC<ObjectListItemProps> = observer(({ object }) => 
         </Card>
     );
 });
-
-export const renderObjectListItem = (object: ObjectDto) => <ObjectListItem key={object.id} object={object} />;

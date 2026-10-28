@@ -9,9 +9,11 @@ import 'react-leaflet-cluster/dist/assets/MarkerCluster.css';
 import { useService } from '~/services/service.base';
 import { MapService } from '~/services/service.map';
 import { ObjectsService } from '~/services/service.objects';
+import { MapHud } from './map.hud';
 import { MapMarker } from './map.marker';
 
 const StypedPaper = styled(Paper)({
+    position: 'relative',
     height: '100%',
     overflow: 'hidden',
     '& .leaflet-container': {
@@ -97,6 +99,7 @@ export const MapView = observer(() => {
                 />
                 <MapCluster />
             </MapContainer>
+            <MapHud />
         </StypedPaper>
     );
 });

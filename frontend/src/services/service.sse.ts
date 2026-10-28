@@ -10,6 +10,7 @@ import {
 } from '~/api/generated.schemas';
 import { ApiService } from './service.api';
 import { AuthService } from './service.auth';
+import { HudService } from './service.hud';
 import { ObjectsService } from './service.objects';
 
 class FatalSseError extends Error {}
@@ -24,6 +25,7 @@ export class SseService {
         private readonly apiSvc: ApiService,
         private readonly authSvc: AuthService,
         private readonly objectsSvc: ObjectsService,
+        private readonly hudSvc: HudService,
     ) {}
 
     private disconnect() {
@@ -79,6 +81,7 @@ export class SseService {
 
     private processMessage = (msg: EventSourceMessage) => {
         if (msg.event !== EventMessageTypeEnum.message) return;
+        this.hudSvc.recordMessage(msg.data.length);
 
         try {
             const data = JSON.parse(msg.data) as EventMessageDtoData;

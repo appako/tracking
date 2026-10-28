@@ -31,6 +31,7 @@
         "@mui/material": "^7.3.4",
         "@react-leaflet/core": "^3.0.0",
         "@tanstack/react-query": "^5.90.5",
+        "@tanstack/react-virtual": "^3.14.23",
         "axios": "^1.13.1",
         "class-transformer": "^0.5.1",
         "class-validator": "^0.14.2",
