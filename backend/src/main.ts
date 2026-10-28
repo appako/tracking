@@ -2,6 +2,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { EnvService } from './common/env.service';
 
 const log = new Logger('MAIN');
 
@@ -30,14 +31,12 @@ async function bootstrap() {
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, document);
 
-    app.enableCors({ origin: (process.env.CORS_ORIGIN ?? 'http://localhost:3000').split(',') });
+    const { CORS_ORIGIN, PORT, HOST } = app.get(EnvService);
+    app.enableCors({ origin: CORS_ORIGIN });
+    await app.listen(PORT);
 
-    const port = process.env.PORT ?? 8000;
-    const host = process.env.HOST ?? 'http://127.0.0.1';
-    await app.listen(port);
-
-    log.debug(`Application is running on: ${host}:${port}`);
-    log.debug(`Swagger documentation: ${host}:${port}/api`);
+    log.debug(`Application is running on: ${HOST}:${PORT}`);
+    log.debug(`Swagger documentation: ${HOST}:${PORT}/api`);
     log.log('Application started successfully');
 }
 

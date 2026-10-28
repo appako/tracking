@@ -1,15 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { EnvService } from '../common/env.service';
 import { AuthResponseDto } from './auth.dto';
 
 @Injectable()
 export class AuthService {
-    private readonly validApiKeys: string[];
-
-    constructor(private configService: ConfigService) {
-        const apiKeysString = this.configService.get<string>('VALID_API_KEYS', '');
-        this.validApiKeys = apiKeysString.split(',').map(key => key.trim());
-    }
+    constructor(private envSvc: EnvService) {}
 
     login(apiKey: string): AuthResponseDto {
         if (!this.isValidApiKey(apiKey)) {
@@ -24,6 +19,6 @@ export class AuthService {
     }
 
     isValidApiKey(apiKey: string): boolean {
-        return this.validApiKeys.includes(apiKey);
+        return this.envSvc.VALID_API_KEYS.includes(apiKey);
     }
 }

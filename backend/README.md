@@ -73,11 +73,15 @@ The documentation includes:
 
 ### Environment Variables
 
+Variables are declared and validated in `EnvService` (`src/common/env.service.ts`); the app refuses to start with an invalid value. Anything not set falls back to its default.
+
 - `HOST` - Server host used in startup logs (default: http://127.0.0.1)
 - `PORT` - Server port (default: 8000)
-- `VALID_API_KEYS` - Comma-separated list of valid API keys
+- `VALID_API_KEYS` - Comma-separated list of valid API keys (required)
 - `CORS_ORIGIN` - Comma-separated list of origins allowed by CORS (default: http://localhost:3000)
 - `MAP_KML_PATH` - Path to the KML file with the polygon objects are generated in, relative to the working directory (default: map.kml)
+- `OBJECTS_COUNT` - Number of simulated objects, 1-20000 (default: 150)
+- `MOVE_INTERVAL_MS` - Interval between position updates in ms, 100-60000; 100 means 10 Hz (default: 5000)
 
 ## License
 

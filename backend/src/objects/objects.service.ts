@@ -1,14 +1,13 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { EnvService } from '../common/env.service';
 import { GeojsonService, PolygonData } from '../common/geojson.service';
 import { PubSubService } from '../common/pubsub.service';
 import { EventMessageKeyEnum, ObjectDto } from './objects.dto';
 
 @Injectable()
 export class ObjectsService implements OnModuleInit, OnModuleDestroy {
-    private static readonly MOVE_INTERVAL_MS = 5 * 1000;
     private static readonly MUTATE_INTERVAL_MS = 60 * 1000;
     private static readonly SPEED_KMH = 200;
     private static readonly METERS_PER_DEGREE = 111000;
@@ -22,15 +21,15 @@ export class ObjectsService implements OnModuleInit, OnModuleDestroy {
     constructor(
         private kmlSvc: GeojsonService,
         private pubSubService: PubSubService,
-        private configService: ConfigService,
+        private envSvc: EnvService,
     ) {}
 
     onModuleInit() {
-        const kmlPath = path.resolve(this.configService.get<string>('MAP_KML_PATH', 'map.kml'));
-        this.polygonData = this.kmlSvc.parsePolygonFromFile(kmlPath);
+        const { MAP_KML_PATH, OBJECTS_COUNT, MOVE_INTERVAL_MS } = this.envSvc;
+        this.polygonData = this.kmlSvc.parsePolygonFromFile(path.resolve(MAP_KML_PATH));
 
-        const count = Math.floor(Math.random() * 101) + 100;
-        while (this.objects.size < count) this.addNewObject();
+        while (this.objects.size < OBJECTS_COUNT) this.addNewObject();
+        this.log.log(`Spawned ${OBJECTS_COUNT} objects, moving every ${MOVE_INTERVAL_MS} ms`);
 
         this.timers.push(
             setInterval(() => {
@@ -40,7 +39,7 @@ export class ObjectsService implements OnModuleInit, OnModuleDestroy {
             }, ObjectsService.MUTATE_INTERVAL_MS),
         );
 
-        this.timers.push(setInterval(() => this.moveObjects(), ObjectsService.MOVE_INTERVAL_MS));
+        this.timers.push(setInterval(() => this.moveObjects(), MOVE_INTERVAL_MS));
     }
 
     onModuleDestroy() {
@@ -50,7 +49,7 @@ export class ObjectsService implements OnModuleInit, OnModuleDestroy {
 
     private moveObjects() {
         const distanceDegrees =
-            ((ObjectsService.SPEED_KMH / 3.6) * (ObjectsService.MOVE_INTERVAL_MS / 1000)) /
+            ((ObjectsService.SPEED_KMH / 3.6) * (this.envSvc.MOVE_INTERVAL_MS / 1000)) /
             ObjectsService.METERS_PER_DEGREE;
 
         this.objects.forEach(obj => {
