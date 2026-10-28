@@ -1,8 +1,8 @@
 import L from 'leaflet';
 import 'leaflet.markercluster';
 import { ObjectDto } from '~/api/generated.schemas';
-import { formatCoordinate, formatDirection, formatTime } from '~/utils/format';
 import { createAirplaneIconHtml, rotateAirplaneIcon } from './map.airplane.icon';
+import { createObjectPopupHtml } from './map.popup';
 
 interface TrackedObject {
     marker: L.Marker;
@@ -19,15 +19,16 @@ export class MapObjectsLayer {
         chunkedLoading: true,
         iconCreateFunction: MapObjectsLayer.createClusterIcon,
     });
-    private readonly popup = L.popup({ offset: MapObjectsLayer.POPUP_OFFSET });
-
+    private popup?: L.Popup;
     private selectedId?: string;
     private pending?: ObjectDto[];
     private isMoving = false;
 
-    constructor(private readonly map: L.Map) {
+    constructor(
+        private readonly map: L.Map,
+        private readonly onSelect: (id: string | undefined) => void,
+    ) {
         this.cluster.on('click', this.onMarkerClick);
-        this.popup.on('remove', this.onPopupRemove);
         this.map.on('movestart', this.onMoveStart);
         this.map.on('moveend', this.onMoveEnd);
         this.map.addLayer(this.cluster);
@@ -36,9 +37,32 @@ export class MapObjectsLayer {
     destroy() {
         this.map.off('movestart', this.onMoveStart);
         this.map.off('moveend', this.onMoveEnd);
-        this.map.closePopup(this.popup);
+        this.closePopup();
         this.map.removeLayer(this.cluster);
     }
+
+    select = (id: string | undefined) => {
+        if (id === this.selectedId && (!id || this.popup)) return;
+        this.selectedId = id;
+
+        const entry = id && this.tracked.get(id);
+        if (!entry) {
+            this.closePopup();
+            return;
+        }
+
+        const popup = L.popup({ offset: MapObjectsLayer.POPUP_OFFSET })
+            .setLatLng(entry.marker.getLatLng())
+            .setContent(createObjectPopupHtml(entry.object));
+        popup.on('remove', () => {
+            if (this.popup !== popup) return;
+            this.popup = undefined;
+            this.selectedId = undefined;
+            this.onSelect(undefined);
+        });
+        this.popup = popup;
+        popup.openOn(this.map);
+    };
 
     update = (objects: ObjectDto[]) => {
         if (this.isMoving) {
@@ -79,7 +103,8 @@ export class MapObjectsLayer {
         moved.forEach(({ marker, object }) => marker.setLatLng([object.latitude, object.longitude]));
         this.cluster.addLayers([...movedMarkers, ...added]);
 
-        this.refreshPopup();
+        if (this.selectedId && !this.popup) this.select(this.selectedId);
+        else this.refreshPopup();
     };
 
     private createMarker(object: ObjectDto) {
@@ -103,32 +128,28 @@ export class MapObjectsLayer {
     }
 
     private refreshPopup() {
-        if (!this.selectedId || !this.map.hasLayer(this.popup)) return;
+        if (!this.selectedId || !this.popup) return;
 
         const entry = this.tracked.get(this.selectedId);
         if (!entry) {
-            this.map.closePopup(this.popup);
+            this.closePopup();
+            this.selectedId = undefined;
+            this.onSelect(undefined);
             return;
         }
 
-        this.popup.setLatLng(entry.marker.getLatLng()).setContent(MapObjectsLayer.createPopupHtml(entry.object));
+        this.popup.setLatLng(entry.marker.getLatLng()).setContent(createObjectPopupHtml(entry.object));
+    }
+
+    private closePopup() {
+        const popup = this.popup;
+        this.popup = undefined;
+        if (popup) this.map.closePopup(popup);
     }
 
     private onMarkerClick = (event: L.LeafletEvent) => {
-        const marker = event.propagatedFrom as L.Marker;
-        const id = this.markerIds.get(marker);
-        const entry = id && this.tracked.get(id);
-        if (!entry) return;
-
-        this.selectedId = id;
-        this.popup
-            .setLatLng(marker.getLatLng())
-            .setContent(MapObjectsLayer.createPopupHtml(entry.object))
-            .openOn(this.map);
-    };
-
-    private onPopupRemove = () => {
-        this.selectedId = undefined;
+        const id = this.markerIds.get(event.propagatedFrom as L.Marker);
+        if (id) this.onSelect(id);
     };
 
     private onMoveStart = () => {
@@ -141,17 +162,6 @@ export class MapObjectsLayer {
         this.pending = undefined;
         if (pending) this.update(pending);
     };
-
-    private static createPopupHtml(object: ObjectDto) {
-        return `<div>
-            <strong>${object.id.slice(-6)}</strong><br />
-            <strong>Position:</strong><br />
-            Lat: ${formatCoordinate(object.latitude)}<br />
-            Lng: ${formatCoordinate(object.longitude)}<br />
-            <strong>Direction:</strong> ${formatDirection(object.direction)}<br />
-            <strong>Updated:</strong> ${formatTime(object.updatedAt)}
-        </div>`;
-    }
 
     private static createClusterIcon(cluster: L.MarkerCluster) {
         const count = cluster.getChildCount();

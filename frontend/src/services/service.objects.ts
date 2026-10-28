@@ -24,6 +24,10 @@ export class ObjectsService {
         return this.objects.size;
     }
 
+    get(id: string) {
+        return this.objects.get(id);
+    }
+
     load = async () => {
         const objects = await this.apiSvc.objectsControllerGetList();
         this.setMany(objects);

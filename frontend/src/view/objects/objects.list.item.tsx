@@ -15,7 +15,7 @@ export const ObjectListItem: FC<ObjectListItemProps> = observer(({ object }) => 
     const [map] = useService(MapService);
 
     const handleClick = useCallback(() => {
-        map.setView(object, 9);
+        map.showObject(object, 9);
     }, [map, object]);
 
     return (

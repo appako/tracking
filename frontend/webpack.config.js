@@ -120,6 +120,16 @@ module.exports = (_env, argv) => {
                         name: 'vendors-leaflet',
                         priority: 30,
                     },
+                    maplibre: {
+                        test: /[\\/]node_modules[\\/](maplibre-gl|react-map-gl|@vis\.gl|@maplibre)[\\/]/,
+                        name: 'vendors-maplibre',
+                        priority: 30,
+                    },
+                    deckgl: {
+                        test: /[\\/]node_modules[\\/](@deck\.gl|@luma\.gl|@loaders\.gl|@math\.gl|@probe\.gl)[\\/]/,
+                        name: 'vendors-deckgl',
+                        priority: 30,
+                    },
                     validation: {
                         test: /[\\/]node_modules[\\/](class-validator|class-transformer|validator|libphonenumber-js)[\\/]/,
                         name: 'vendors-validation',
