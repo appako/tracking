@@ -88,6 +88,8 @@ Data flow on the map page (`SseService` + `ObjectsService`):
 
 Auth on the frontend: `AuthService` keeps `apiKey` and `status` (`'verifying' | 'authenticated' | 'anonymous'`) as observables, stores the key in `sessionStorage` and sets it as the default axios `Authorization` header. `logout()` also clears objects and the React Query cache. Routing (`react-router-typesafe-routes`, `src/routes.ts`): `AppLayout` shows a spinner while verifying, `AuthWrapper` redirects anonymous users to `/login`, `LoginPage` redirects authenticated users to `/map`, `/` and unknown paths redirect to `/map`.
 
-`MapPage` is loaded with `React.lazy` (Suspense in `AppLayout`); webpack `splitChunks` groups vendors into `vendors-react`, `vendors-react-server`, `vendors-mui`, `vendors-leaflet`, `vendors-validation` and `vendors`, so Leaflet and `react-dom/server` (used by `renderToString` for marker icons) load only with the map. `react-leaflet-cluster` 4.x needs its CSS imported manually.
+`MapPage` is loaded with `React.lazy` (Suspense in `AppLayout`); webpack `splitChunks` groups vendors into `vendors-react`, `vendors-mui`, `vendors-leaflet`, `vendors-validation` and `vendors`, so Leaflet loads only with the map.
+
+Map markers bypass React: `MapObjectsLayer` (`view/map/map.objects.layer.ts`) owns one `L.Marker` per object inside a `leaflet.markercluster` group and is fed by a MobX `reaction` on `ObjectsService.items`. Each update moves markers in bulk (`removeLayers` → `setLatLng` → `addLayers`) instead of per-marker moves, rotates icons via `style.transform` on the static icon HTML, uses one shared popup, and buffers updates while the map is moving (`movestart`/`moveend`). The objects list is virtualized with `@tanstack/react-virtual`.
 
 Import alias `~/*` maps to `frontend/src/*`. `API_HOST` (from `.env`, injected by `dotenv-webpack`) is the backend base URL. `src/declarations.d.ts` declares `*.css` modules.

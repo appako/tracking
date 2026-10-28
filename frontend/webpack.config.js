@@ -105,11 +105,6 @@ module.exports = (_env, argv) => {
             splitChunks: {
                 chunks: 'all',
                 cacheGroups: {
-                    reactServer: {
-                        test: /[\\/]node_modules[\\/]react-dom[\\/](server|cjs[\\/]react-dom-server)/,
-                        name: 'vendors-react-server',
-                        priority: 40,
-                    },
                     react: {
                         test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-router|react-router-dom)[\\/]/,
                         name: 'vendors-react',
@@ -121,7 +116,7 @@ module.exports = (_env, argv) => {
                         priority: 30,
                     },
                     leaflet: {
-                        test: /[\\/]node_modules[\\/](leaflet|leaflet\.markercluster|react-leaflet|@react-leaflet|react-leaflet-cluster)[\\/]/,
+                        test: /[\\/]node_modules[\\/](leaflet|leaflet\.markercluster|react-leaflet|@react-leaflet)[\\/]/,
                         name: 'vendors-leaflet',
                         priority: 30,
                     },
